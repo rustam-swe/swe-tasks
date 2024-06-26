@@ -1,4 +1,4 @@
-<form action="Calculate_Work_Of_Time.php" method = "post">
+<form action="Calc_Workoff_Time.php" method = "post">
 
     Date <input type="date" name = "Date"> <br><br>
     Arrived_at <input type="time" name = "Arrived_at"> <br><br>
