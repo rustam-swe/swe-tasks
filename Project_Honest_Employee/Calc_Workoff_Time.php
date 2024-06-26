@@ -1,5 +1,4 @@
-<pre>
-<form action="time.php" method = "post">
+<form action="Calculate_Work_Of_Time.php" method = "post">
 
     Date <input type="date" name = "Date"> <br><br>
     Arrived_at <input type="time" name = "Arrived_at"> <br><br>
@@ -7,7 +6,6 @@
     <button>Send</button>
 
 </form>
-</pre>
 
 <pre>
 <?php
