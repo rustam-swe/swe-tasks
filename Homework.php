@@ -3,7 +3,7 @@
     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     foreach ($days as $day) {
         echo $day . " Access time: <input type='datetime-local' name='Access_Time[$day]' required><br>";
-        echo $day . " Exit time: <input type='datetime-local' name='Exit_Time[$day]' required><br><br>";
+        echo $day . " Exit time: <input type='datetime-local' name='Exit_Time[$day]' required><br><br>"; 
     }
     ?>
     <button type="Submit">Submit</button>
