@@ -7,7 +7,7 @@ declare(strict_types=1);
  * - Calculate work off time (qarz) if you didn’t yet
  * - Show inputs from Monday to Friday and calculate in total work time and work off time
  * */
-<form action="lesson_3.php" method="post">
+<form action="Abdulqayum_Alijon_ogli.php" method="post">
     Kelgan vaqtingiz :<input type="datetime-local" name="arrivedAt" required>
     <br>
     Ketgan vaqtingiz :<input type="datetime-local" name="leavedAt" required>
