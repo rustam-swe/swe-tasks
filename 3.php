@@ -5,60 +5,53 @@ date_default_timezone_set('Asia/Tashkent');
 $conn = new PDO(
     'mysql:host=localhost;dbname=vaqt1',
     'root',
-    'root');
-
+    'root'
+);
 
 ?>
 
-    <form action="3.php" method="post">
-        <label>
-            Arrived At
-            <input type="datetime-local" name="vaqt" required>
-        </label><br>
+<form action="3.php" method="post">
+    <label>
+        Arrived At
+        <input type="datetime-local" name="arrived_at" required>
+    </label><br>
 
-        <label>
-            Leaved At
-            <input type="datetime-local" name="vaqt1" required>
-        </label>
-        <button>Submit</button>
-    </form>
+    <label>
+        Leaved At
+        <input type="datetime-local" name="leaved_at" required>
+    </label>
+    <button>Submit</button>
+</form>
 
 <?php
 
-if (($_POST["vaqt"])!== '' && ($_POST["vaqt1"]) !== '') {
-    $arrived_at = (new DateTime($_POST['vaqt']))->format('Y-m-d H:i:s');
-    $leaved_at  = (new DateTime($_POST['vaqt1']))->format('Y-m-d H:i:s');
-    echo $arrived_at."\n";
-    echo $leaved_at;
+if (!empty($_POST["arrived_at"]) && !empty($_POST["leaved_at"])) {
+    $arrived_at = (new DateTime($_POST['arrived_at']))->format('Y-m-d H:i:s');
+    $leaved_at  = (new DateTime($_POST['leaved_at']))->format('Y-m-d H:i:s');
     
-    $sql = "INSERT INTO vaqt(id,arrived_at, leaved_at) VALUES ('$arrived_at','$leaved_at')";
+    $sql = "INSERT INTO vaqt (arrived_at, leaved_at) VALUES (:arrived_at, :leaved_at)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':arrived_at', $arrived_at);
+    $stmt->bindParam(':leaved_at', $leaved_at);
 
+    if($stmt->execute()){
+        echo "Ma'lumotlar bazaga qo'shildi.";
+    }else{
+        echo "Ma'lumot bazaga qushilmadi.";
+    }
 
     $sql = "SELECT * FROM vaqt";
     $result = $conn->query($sql);
 
-
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            echo '<h2>' . $row["id"] . '</h2>';
-            echo '<h2>' . $row["vaqt"] . '</h2>'
-            echo '<h2>' . $row["vaqt1"] . '</h2>'
-            }
+    if ($result->rowCount() > 0) {
+        while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+            echo '<h2>' ."ID : ". $row["id"] . '</h2>';
+            echo '<h2>' ."Arrived At : ". $row["arrived_at"] . '</h2>';
+            echo '<h2>' ."Leaved At : ". $row["leaved_at"] . '</h2>';
         }
-    
-    if($conn->query($sql) === TRUE){
-        echo "yes";
-
-    }else{
-        echo "no";
     }
 }
 else {
-    echo 'Please fill the inputs';
+    echo "Iltimos ma'lumotlarni kiriting.";
 }
-$stmt->cloce();
 ?>
-
-
-
-
