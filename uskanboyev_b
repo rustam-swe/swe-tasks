@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Work Off Tracker</title>
+</head>
+
+<body>
+    <form action="work_off_tracker.php" method="POST">
+        <label>Kelgan vaqti:</label>
+        <input type="datetime-local" name="arrived_at">
+        <label>Ketgan vaqti:</label>
+        <input type="datetime-local" name="leaved_at">
+        <button type="submit">Jo'natish</button>
+    </form>
+</body>
+
+</html>
+<?php
+class WorkOffTracker
+{
+    private $pdo;
+
+    public function __construct($host, $dbname, $username, $password)
+    {
+        $dsn = "mysql:host=$host;dbname=$dbname";
+        $this->pdo = new PDO($dsn, $username, $password);
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
+
+    public function addEntry($arrived_at, $leaved_at)
+    {
+        $query = "INSERT INTO daily (arrived_at, leaved_at) VALUES (:arrived_at, :leaved_at)";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindParam(':arrived_at', $arrived_at);
+        $stmt->bindParam(':leaved_at', $leaved_at);
+        $stmt->execute();
+    }
+}
+
+date_default_timezone_set('Asia/Tashkent');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!empty($_POST['arrived_at']) && !empty($_POST['leaved_at'])) {
+        $arrived_at = (new DateTime($_POST['arrived_at']))->format('Y-m-d H:i:s');
+        $leaved_at = (new DateTime($_POST['leaved_at']))->format('Y-m-d H:i:s');
+
+        $tracker = new WorkOffTracker('localhost', 'work_off_tracker', 'beko', '9999');
+        $tracker->addEntry($arrived_at, $leaved_at);
+
+        echo 'Ma\'lumotlar muvaffaqiyatli saqlandi';
+    } else {
+        echo 'Iltimos, barcha maydonlarni to\'ldiring';
+    }
+}
+?>
