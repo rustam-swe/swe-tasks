@@ -86,6 +86,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1 class="text-center mb-10">PWOT - Personal Work Off Tracker</h1>
 
     <form method="post" action="" class="mb-4">
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label for="arrived_at">Arrived at</label>
+            <input type="datetime-local" class="form-control" name="arrived_at" required>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="leaved_at">Leaved at</label>
+            <input type="datetime-local" class="form-control" name="leaved_at" required>
+        </div>
+        <div class="form-group col-md-4 align-self-end">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+</form>
+    <!-- <form method="post" action="" class="mb-4">
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="arrived_at">Arrived at</label>
@@ -97,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    </form> -->
 
     <table class="table table-bordered">
     <thead class="thead-dark">
