@@ -100,19 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </form>
-    <!-- <form method="post" action="" class="mb-4">
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="arrived_at">Arrived at</label>
-                <input type="datetime-local" class="form-control" name="arrived_at" required>
-            </div>
-            <div class="form-group col-md-6">
-                <label for="leaved_at">Leaved at</label>
-                <input type="datetime-local" class="form-control" name="leaved_at" required>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form> -->
 
     <table class="table table-bordered">
     <thead class="thead-dark">
