@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 echo "0 min.";
                             }
                             ?></td>
-                    <td><?php echo ($debtInSeconds < 0) ? "Worked on" : "Worked off"?></td>
+                    <td><?php echo ($debtInSeconds < 0) ? "Ishlashingiz shart EMAS" : "Ishlab berishingiz kerak"?></td>
                 </tr>
             <?php } ?>
         <?php endif; ?>
