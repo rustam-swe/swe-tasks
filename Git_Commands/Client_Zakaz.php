@@ -48,7 +48,6 @@ class Workly{
             echo "Error : " . $e->getMessage();
         }
     }
-
 }
 
 $data = new Workly('root','root','Workly','localhost');
@@ -82,6 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
+<script>
+
+function confirmAction(button) {
+    var confirmed = confirm("Are you sure?");
+    if (confirmed) {
+        var checkbox = button.parentElement.querySelector('.done-checkbox');
+        checkbox.checked = true;
+        button.style.display = 'none';
+        checkbox.style.display = 'inline';
+    }
+}
+
+</script>
+
 <div class="container mt-5">
     <h1 class="text-center mb-10">PWOT - Personal Work Off Tracker</h1>
 
@@ -114,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <tbody>
         <?php if (!empty($rows)) : ?>
             <?php foreach ($rows as $index => $row) {
+                
                 $arrived_at = new DateTime($row['arrived_at']);
                 $leaved_at = new DateTime($row['leaved_at']);
                 $requiredWorkHours = new DateTime('09:00:00');
@@ -124,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $debtInSeconds = $requiredSeconds - $intervalInSeconds;
                 $total_debt += $debtInSeconds;
+                
                 ?>
                 <tr>
                     <td><?php echo $index + 1;?></td>
@@ -140,7 +155,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 echo "0 min.";
                             }
                             ?></td>
-                    <td><?php echo ($debtInSeconds < 0) ? "Work On" : "Work Off"?></td>
+                    <td>
+                        <?php if ($debtInSeconds > 0) : ?>
+                            <button type="button" class="btn btn-primary" onclick="confirmAction(this)">Done</button>
+                            <input type="checkbox" class="done-checkbox" style="display: none;">
+                            <?php else : ?>
+                                <input type="checkbox" checked disabled>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php } ?>
         <?php endif; ?>
