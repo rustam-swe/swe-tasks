@@ -1,53 +1,55 @@
 <?php
 
-class Workly{
+class Workly {
 
     public $username;
     public $password;
     public $dbname;
     public $host;
     public $pdo;
-    public $workDuration;
-    public $totalWorkOfTime;
-    
-    public function __construct($username,$password,$dbname,$host){
+    public $total_debt;
+
+    public function __construct($username, $password, $dbname, $host) {
         $this->username = $username;
         $this->password = $password;
         $this->dbname = $dbname;
         $this->host = $host;
     }
 
-    public function connect(){
+    public function connect() {
         try {
-            $this->pdo = new PDO("mysql:host=$this->host;dbname=$this->dbname",$this->username,$this->password);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+            $this->pdo = new PDO("mysql:host=$this->host;dbname=$this->dbname", $this->username, $this->password);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            echo "Connection failed :" . $e->getMessage();
+            echo "Connection failed: " . $e->getMessage();
         }
     }
 
-    public function fetchAllRows(){
-        try{
+    public function fetchAllRows() {
+        try {
             $query = "SELECT * FROM daily";
             $stmt = $this->pdo->query($query);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $rows;
-        } catch(PDOException $e){
-            echo "Error : " . $e->getMessage();
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
         }
     }
 
-    public function insertData($arrivedAt,$leavedAt){
+    public function insertData($arrivedAt, $leavedAt, $requiredWork, $workedOff) {
         try {
-            $query = "INSERT INTO daily (arrived_at,leaved_at) VALUES (:arrivedAt,:leavedAt);";
+            $query = "INSERT INTO daily (arrived_at, leaved_at, required_work, worked_off) VALUES (:arrivedAt, :leavedAt, :requiredWork, :workedOff);";
             $stmt = $this->pdo->prepare($query);
-            $stmt->bindValue(":arrivedAt",$arrivedAt);
-            $stmt->bindValue(":leavedAt",$leavedAt);
+            $stmt->bindValue(":arrivedAt", $arrivedAt->format('Y-m-d H:i:s')); // Format the DateTime object
+            $stmt->bindValue(":leavedAt", $leavedAt->format('Y-m-d H:i:s')); // Format the DateTime object
+            $stmt->bindValue(":requiredWork", $requiredWork);
+            $stmt->bindValue(":workedOff", $workedOff);
             $stmt->execute();
         } catch (PDOException $e) {
-            echo "Error : " . $e->getMessage();
+            echo "Error: " . $e->getMessage();
         }
     }
+
 }
 
 $data = new Workly('root','root','Workly','localhost');
@@ -55,14 +57,23 @@ $data->connect();
 $rows = $data->fetchAllRows();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    $arrivedAt = new DateTime($_POST['arrived_at']);
+    $leavedAt = new DateTime($_POST['leaved_at']);
+    
+    $duration = $arrivedAt->diff($leavedAt);
+    $intervalInSeconds = $duration->s + ($duration->i * 60) + ($duration->h * 3600);
+    $requiredWork = $intervalInSeconds;
 
-    $arrivedAt = $_POST['arrived_at'];
-    $leavedAt = $_POST['leaved_at'];
+    if ($requiredWork > 0) {
+        $workedOff = 1;
+    } else {
+        $workedOff = 0;
+    }
 
-    $data->insertData($arrivedAt, $leavedAt);
+    $data->insertData($arrivedAt, $leavedAt, $requiredWork, $workedOff);
 
     header("Location: {$_SERVER['PHP_SELF']}");
-
     exit();
 
 }
@@ -90,6 +101,20 @@ function confirmAction(button) {
         checkbox.checked = true;
         button.style.display = 'none';
         checkbox.style.display = 'inline';
+
+        var requiredWorkOff = button.parentElement.previousElementSibling.innerHTML;
+
+        var minutes = parseInt(requiredWorkOff.split(" ")[0]);
+
+        var totalDebtElement = document.getElementById('total_debt');
+        var currentTotalDebt = parseInt(totalDebtElement.innerHTML.split(" ")[4]);
+        var newTotalDebt = currentTotalDebt - minutes;
+
+        totalDebtElement.innerHTML = "Total Work Of Time: " + Math.floor(newTotalDebt / 60) + " hours and " + (newTotalDebt % 60) + " min";
+
+        // Color the row green
+        var row = button.parentElement.parentElement;
+        row.style.backgroundColor = "green";
     }
 }
 
@@ -125,47 +150,49 @@ function confirmAction(button) {
         </tr>
     </thead>
     <tbody>
-        <?php if (!empty($rows)) : ?>
-            <?php foreach ($rows as $index => $row) {
-                
-                $arrived_at = new DateTime($row['arrived_at']);
-                $leaved_at = new DateTime($row['leaved_at']);
-                $requiredWorkHours = new DateTime('09:00:00');
+    <?php if (!empty($rows)) : ?>
+    <?php
+    $total_debt = 0;
 
-                $duration = $arrived_at->diff($leaved_at);
-                $intervalInSeconds = $duration->s + ($duration->i * 60) + ($duration->h * 3600);
-                $requiredSeconds = $requiredWorkHours->format('s') + ($requiredWorkHours->format('i') * 60) + ($requiredWorkHours->format('h') * 3600);
+    foreach ($rows as $index => $row) {
 
-                $debtInSeconds = $requiredSeconds - $intervalInSeconds;
-                $total_debt += $debtInSeconds;
-                
-                ?>
-                <tr>
-                    <td><?php echo $index + 1;?></td>
-                    <td><?php echo $arrived_at->format('Y-m-d H:i:s'); ?></td>
-                    <td><?php echo $leaved_at->format('Y-m-d H:i:s'); ?></td>
-                    <td><?php
-                            if ($debtInSeconds > 0) {
-                                if(($debtInSeconds / 60) >= 60 ){
-                                        echo (int)($debtInSeconds / 3600) . ' hours and ' . (int)(($debtInSeconds%3600) / 60) . " min";
-                                } else {
-                                        echo (int)($debtInSeconds / 60) . " min"; 
-                                }
-                            } else {
-                                echo "0 min.";
-                            }
-                            ?></td>
-                    <td>
-                        <?php if ($debtInSeconds > 0) : ?>
-                            <button type="button" class="btn btn-primary" onclick="confirmAction(this)">Done</button>
-                            <input type="checkbox" class="done-checkbox" style="display: none;">
-                            <?php else : ?>
-                                <input type="checkbox" checked disabled>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php } ?>
-        <?php endif; ?>
+        $arrived_at = new DateTime($row['arrived_at']);
+        $leaved_at = new DateTime($row['leaved_at']);
+        $requiredWorkHours = DateTime::createFromFormat('H:i:s', '09:00:00');
+
+        $duration = $arrived_at->diff($leaved_at);
+        $intervalInSeconds = $duration->s + ($duration->i * 60) + ($duration->h * 3600);
+        $requiredSeconds = $requiredWorkHours->format('s') + ($requiredWorkHours->format('i') * 60) + ($requiredWorkHours->format('h') * 3600);
+
+        $debtInSeconds = $requiredSeconds - $intervalInSeconds;
+        $total_debt += $debtInSeconds;
+        ?>
+        <tr>
+            <td><?php echo $index + 1; ?></td>
+            <td><?php echo $arrived_at->format('Y-m-d H:i:s'); ?></td>
+            <td><?php echo $leaved_at->format('Y-m-d H:i:s'); ?></td>
+            <td><?php
+                if ($debtInSeconds > 0) {
+                    if (($debtInSeconds / 60) >= 60) {
+                        echo (int)($debtInSeconds / 3600) . ' hours and ' . (int)(($debtInSeconds % 3600) / 60) . " min";
+                    } else {
+                        echo (int)($debtInSeconds / 60) . " min";
+                    }
+                } else {
+                    echo "0 min.";
+                }
+                ?></td>
+            <td>
+            <?php if ($debtInSeconds > 0) : ?>
+                    <button type="button" class="btn btn-primary" onclick="confirmAction(this)">Done</button>
+                    <input type="checkbox" class="done-checkbox" style="display: none;">
+                <?php else : ?>
+                    <input type="checkbox" checked disabled>
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php } ?>
+<?php endif; ?>
     </tbody>
 </table>
     <h5>Total Work Of Time : <?php echo (int)($total_debt / 3600) . ' hours and ' . (int)(($total_debt%3600) / 60) . " min"?> </h5>
