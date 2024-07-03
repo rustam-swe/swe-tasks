@@ -61,10 +61,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $arrivedAt = new DateTime($_POST['arrived_at']);
     $leavedAt = new DateTime($_POST['leaved_at']);
     
-    $duration = $arrivedAt->diff($leavedAt);
-    $intervalInSeconds = $duration->s + ($duration->i * 60) + ($duration->h * 3600);
-    $requiredWork = $intervalInSeconds;
-
+    if ($leavedAt < $arrivedAt) {
+        
+        $requiredWork = 0;
+    
+    } else {
+        $duration = $leavedAt->getTimestamp() - $arrivedAt->getTimestamp();;
+        $intervalInSeconds = $duration;
+        
+        if ($intervalInSeconds > 32400){
+            $requiredWork = 0;
+        } else {
+            $requiredWork = 32400 - $intervalInSeconds;
+        }
+    }
+    
     if ($requiredWork > 0) {
         $workedOff = 1;
     } else {
@@ -159,13 +170,11 @@ s
         $arrived_at = new DateTime($row['arrived_at']);
         $leaved_at = new DateTime($row['leaved_at']);
         $requiredWorkHours = DateTime::createFromFormat('H:i:s', '09:00:00');
+        $debtInSeconds = $row['required_work'];
 
-        $duration = $arrived_at->diff($leaved_at);
-        $intervalInSeconds = $duration->s + ($duration->i * 60) + ($duration->h * 3600);
-        $requiredSeconds = $requiredWorkHours->format('s') + ($requiredWorkHours->format('i') * 60) + ($requiredWorkHours->format('h') * 3600);
-
-        $debtInSeconds = $requiredSeconds - $intervalInSeconds;
-        $total_debt += $debtInSeconds;
+        if ($row['worked_off'] == 1){
+            $total_debt += $row['required_work'];
+        }
         ?>
         <tr>
             <td><?php echo $index + 1; ?></td>
