@@ -205,26 +205,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
 <script>
 
 function confirmAction(button) {
-
     var confirmed = confirm("Are you sure?");
     if (confirmed) {
-        var checkbox = button.parentElement.querySelector('.done-checkbox');
+        var checkbox = button.nextElementSibling;
         checkbox.checked = true;
         button.style.display = 'none';
         checkbox.style.display = 'inline';
 
-        var requiredWorkOff = button.parentElement.previousElementSibling.innerHTML;
-
-        var minutes = parseInt(requiredWorkOff.split(" ")[0]);
-
-        var totalDebtElement = document.getElementById('total_debt');
-        var currentTotalDebt = parseInt(totalDebtElement.innerHTML.split(" ")[4]);
-        var newTotalDebt = currentTotalDebt - minutes;
-
-        totalDebtElement.innerHTML = "Total Work Of Time: " + Math.floor(newTotalDebt / 60) + " hours and " + (newTotalDebt % 60) + " min";
-
-        var row = button.parentElement.parentElement;
-        row.style.backgroundColor = "green";
+        var row = button.closest('tr');
+        row.style.backgroundColor = "#A2E4A4";
     }
 }
 
