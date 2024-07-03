@@ -40,8 +40,8 @@ class Workly {
         try {
             $query = "INSERT INTO daily (arrived_at, leaved_at, required_work, worked_off) VALUES (:arrivedAt, :leavedAt, :requiredWork, :workedOff);";
             $stmt = $this->pdo->prepare($query);
-            $stmt->bindValue(":arrivedAt", $arrivedAt->format('Y-m-d H:i:s')); // Format the DateTime object
-            $stmt->bindValue(":leavedAt", $leavedAt->format('Y-m-d H:i:s')); // Format the DateTime object
+            $stmt->bindValue(":arrivedAt", $arrivedAt->format('Y-m-d H:i:s')); 
+            $stmt->bindValue(":leavedAt", $leavedAt->format('Y-m-d H:i:s'));
             $stmt->bindValue(":requiredWork", $requiredWork);
             $stmt->bindValue(":workedOff", $workedOff);
             $stmt->execute();
@@ -95,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script>
 
 function confirmAction(button) {
+
     var confirmed = confirm("Are you sure?");
     if (confirmed) {
         var checkbox = button.parentElement.querySelector('.done-checkbox');
@@ -112,14 +113,13 @@ function confirmAction(button) {
 
         totalDebtElement.innerHTML = "Total Work Of Time: " + Math.floor(newTotalDebt / 60) + " hours and " + (newTotalDebt % 60) + " min";
 
-        // Color the row green
         var row = button.parentElement.parentElement;
         row.style.backgroundColor = "green";
     }
 }
 
 </script>
-
+s
 <div class="container mt-5">
     <h1 class="text-center mb-10">PWOT - Personal Work Off Tracker</h1>
 
