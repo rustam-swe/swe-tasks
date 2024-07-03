@@ -35,7 +35,7 @@ class PersonalWorkOffTracker {
         $leaved_at_dt = new DateTime($leaved_at);
     
         $interval = $arrived_at_dt->diff($leaved_at_dt);
-        $hours = $interval->h + ($interval->days * 9);
+        $hours = $interval->h + ($interval->days * 24);
         $minutes = $interval->i;
         $required_work_off = sprintf('%02d:%02d:00', $hours, $minutes);
     
@@ -61,7 +61,7 @@ class PersonalWorkOffTracker {
         if ($result->rowCount() > 0) {
             echo '<form action="" method="post">';
             echo '<table class="table">';
-            echo '<thead><tr><th>#</th><th>Yetkazilgan vaqti</th><th>Chiqib ketgan vaqti</th><th>Kerakli ish qilish</th><th>Ishlangan</th></tr></thead>';
+            echo '<thead><tr><th>#</th><th>Yetkazilgan vaqti</th><th>Chiqib ketgan vaqti</th><th>Kerakli ish qilish</th><th>Ishlangan</th><th>Amal</th></tr></thead>';
             echo '<tbody>';
             
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -70,7 +70,12 @@ class PersonalWorkOffTracker {
                 echo '<td>' . $row["arrived_at"] . '</td>';
                 echo '<td>' . $row["leaved_at"] . '</td>';
                 echo '<td>' . $row["required_work_off"] . '</td>';
-                echo '<td><input type="checkbox" name="worked_off[]" value="' . $row["id"] . '"' . ($row["worked_off"] ? ' checked' : '') . '></td>';
+                echo '<td><input type="checkbox" name="worked_off[]" value="' . $row["id"] . '"' . ($row["worked_off"] ? ' checked' : '') . ' disabled></td>';
+                echo '<td>';
+                if (!$row["worked_off"]) {
+                    echo '<button type="submit" name="done" value="' . $row["id"] . '" class="btn btn-success">Done</button>';
+                }
+                echo '</td>';
                 echo '</tr>';
 
                 if (!$row["worked_off"]) {
@@ -86,18 +91,15 @@ class PersonalWorkOffTracker {
             echo '<tr><td colspan="4" style="text-align: right;">Jami ish utkazish soatlar</td><td>' . $total_hours . ' soat va ' . $total_minutes . ' daqiqa.</td></tr>';
             echo '</tbody>';
             echo '</table>';
-            echo '<button type="submit" name="update" class="btn btn-primary">Yangilash</button>';
             echo '</form>';
         }
     }
 
-    public function updateWorkedOff($worked_off) {
+    public function updateWorkedOff($id) {
         $sql = "UPDATE daily SET worked_off = 1 WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
-        foreach ($worked_off as $id) {
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-        }
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
     }
 }
 
@@ -112,12 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo "<p style='color: red;'>Iltimos ma'lumotlarni kiriting.</p>";
         }
-    } elseif (isset($_POST["update"])) {
-        if (!empty($_POST["worked_off"])) {
-            $tracker->updateWorkedOff($_POST["worked_off"]);
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit();
-        }
+    } elseif (isset($_POST["done"])) {
+        $tracker->updateWorkedOff($_POST["done"]);
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit();
     }
 }
 ?>
