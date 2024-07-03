@@ -36,6 +36,17 @@ class Workly {
         }
     }
 
+    public function updateWorkedOff($id) {
+        try {
+            $query = "UPDATE daily SET worked_off = 0 WHERE id = :id";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->bindValue(":id", $id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    }
+
     public function insertData($arrivedAt, $leavedAt, $requiredWork, $workedOff) {
         try {
             $query = "INSERT INTO daily (arrived_at, leaved_at, required_work, worked_off) VALUES (:arrivedAt, :leavedAt, :requiredWork, :workedOff);";
@@ -75,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $requiredWork = 32400 - $intervalInSeconds;
         }
     }
-    
+
     if ($requiredWork > 0) {
         $workedOff = 1;
     } else {
@@ -87,6 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: {$_SERVER['PHP_SELF']}");
     exit();
 
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $data->updateWorkedOff($id);
+
+    header("Location: {$_SERVER['PHP_SELF']}");
+    exit();
 }
 
 ?>
@@ -103,34 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<script>
-
-function confirmAction(button) {
-
-    var confirmed = confirm("Are you sure?");
-    if (confirmed) {
-        var checkbox = button.parentElement.querySelector('.done-checkbox');
-        checkbox.checked = true;
-        button.style.display = 'none';
-        checkbox.style.display = 'inline';
-
-        var requiredWorkOff = button.parentElement.previousElementSibling.innerHTML;
-
-        var minutes = parseInt(requiredWorkOff.split(" ")[0]);
-
-        var totalDebtElement = document.getElementById('total_debt');
-        var currentTotalDebt = parseInt(totalDebtElement.innerHTML.split(" ")[4]);
-        var newTotalDebt = currentTotalDebt - minutes;
-
-        totalDebtElement.innerHTML = "Total Work Of Time: " + Math.floor(newTotalDebt / 60) + " hours and " + (newTotalDebt % 60) + " min";
-
-        var row = button.parentElement.parentElement;
-        row.style.backgroundColor = "green";
-    }
-}
-
-</script>
-s
 <div class="container mt-5">
     <h1 class="text-center mb-10">PWOT - Personal Work Off Tracker</h1>
 
@@ -210,5 +201,34 @@ s
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+
+function confirmAction(button) {
+
+    var confirmed = confirm("Are you sure?");
+    if (confirmed) {
+        var checkbox = button.parentElement.querySelector('.done-checkbox');
+        checkbox.checked = true;
+        button.style.display = 'none';
+        checkbox.style.display = 'inline';
+
+        var requiredWorkOff = button.parentElement.previousElementSibling.innerHTML;
+
+        var minutes = parseInt(requiredWorkOff.split(" ")[0]);
+
+        var totalDebtElement = document.getElementById('total_debt');
+        var currentTotalDebt = parseInt(totalDebtElement.innerHTML.split(" ")[4]);
+        var newTotalDebt = currentTotalDebt - minutes;
+
+        totalDebtElement.innerHTML = "Total Work Of Time: " + Math.floor(newTotalDebt / 60) + " hours and " + (newTotalDebt % 60) + " min";
+
+        var row = button.parentElement.parentElement;
+        row.style.backgroundColor = "green";
+    }
+}
+
+</script>
+
 </body>
 </html>
